@@ -20,8 +20,8 @@ resource "aws_ecs_task_definition" "email" {
         }
       ]
       secrets = [
-        { name = "JWT_SECRET", valueFrom = "arn:aws:secretsmanager:ap-south-1:775826428475:secret:/quickcart/backend/common-rL3fc5" },
-        { name = "NODE_ENV", valueFrom = "arn:aws:secretsmanager:ap-south-1:775826428475:secret:/quickcart/backend/common-rL3fc5" }
+        { name = "JWT_SECRET", valueFrom = "arn:aws:secretsmanager:ap-south-1:775826428475:secret:/quickcart/backend/common-rL3fc5:JWT_SECRET::" },
+        { name = "NODE_ENV", valueFrom = "arn:aws:secretsmanager:ap-south-1:775826428475:secret:/quickcart/backend/common-rL3fc5:NODE_ENV::" }
       ]
       environment = [
         { name = "AWS_REGION", value = "ap-south-1" },
