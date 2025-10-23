@@ -45,31 +45,31 @@ pipeline {
         }
 
         stage('Build & Deploy Frontend to S3') {
-    steps {
-        script {
-            // Get ALB DNS dynamically from Terraform output
-            env.ALB_DNS = sh(script: "terraform output -raw alb_dns_name", returnStdout: true).trim()
-            echo "ALB DNS: ${env.ALB_DNS}"
+            steps {
+                script {
+                    // Get ALB DNS dynamically from Terraform output
+                    env.ALB_DNS = sh(script: "terraform output -raw alb_dns_name", returnStdout: true).trim()
+                    echo "ALB DNS: ${env.ALB_DNS}"
 
-            sh """
-            cd frontend
-            # Replace the REACT_APP_API_URL in .env with the ALB DNS
-            sed -i 's|REACT_APP_API_URL=.*|REACT_APP_API_URL=http://${env.ALB_DNS}|' .env
+                    sh """
+                    cd frontend
+                    # Replace the REACT_APP_API_URL in .env with the ALB DNS
+                    sed -i 's|REACT_APP_API_URL=.*|REACT_APP_API_URL=http://${env.ALB_DNS}|' .env
 
-            rm -rf node_modules package-lock.json
-            npm install
+                    rm -rf node_modules package-lock.json
+                    npm install
 
-            chmod +x node_modules/.bin/*
+                    chmod +x node_modules/.bin/*
 
-            export CI=false
-            npm run build
+                    export CI=false
+                    npm run build
 
-            aws s3 sync build/ s3://devops-project-frontend-rajesh --region ${AWS_REGION}
-            """
+                    aws s3 sync build/ s3://devops-project-frontend-rajesh --region ${AWS_REGION}
+                    """
+                }
+            }
         }
     }
-}
-
 
     post {
         success { 
