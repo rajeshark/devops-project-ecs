@@ -15,29 +15,17 @@ pipeline {
             steps {
                 script {
                     def services = ['auth','product','cart','order','payment','email']
-
                     for (service in services) {
-                        // Detect if files in this service folder changed
-                        def changed = sh(
-                            script: "git diff --name-only HEAD~1 HEAD | grep '^${service}/' || true",
-                            returnStatus: true
-                        ) == 0
+                        sh """
+                        aws ecr describe-repositories --repository-names ${service} --region ${ECR_REGION} || \
+                        aws ecr create-repository --repository-name ${service} --region ${ECR_REGION}
 
-                        if (changed) {
-                            echo "Changes detected in ${service}, building Docker image..."
-                            sh """
-                                aws ecr describe-repositories --repository-names ${service} --region ${ECR_REGION} || \
-                                aws ecr create-repository --repository-name ${service} --region ${ECR_REGION}
-
-                                cd ${service}
-                                docker build -t ${ECR_ACCOUNT}.dkr.ecr.${ECR_REGION}.amazonaws.com/${service}:latest .
-                                aws ecr get-login-password --region ${ECR_REGION} | docker login --username AWS --password-stdin ${ECR_ACCOUNT}.dkr.ecr.${ECR_REGION}.amazonaws.com
-                                docker push ${ECR_ACCOUNT}.dkr.ecr.${ECR_REGION}.amazonaws.com/${service}:latest
-                                cd ..
-                            """
-                        } else {
-                            echo "No changes in ${service}, skipping Docker build/push."
-                        }
+                        cd ${service}
+                        docker build -t ${ECR_ACCOUNT}.dkr.ecr.${ECR_REGION}.amazonaws.com/${service}:latest .
+                        aws ecr get-login-password --region ${ECR_REGION} | docker login --username AWS --password-stdin ${ECR_ACCOUNT}.dkr.ecr.${ECR_REGION}.amazonaws.com
+                        docker push ${ECR_ACCOUNT}.dkr.ecr.${ECR_REGION}.amazonaws.com/${service}:latest
+                        cd ..
+                        """
                     }
                 }
             }
@@ -48,8 +36,8 @@ pipeline {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-creds-id']]) {
                     dir('terraform') {
                         sh """
-                            terraform init
-                            terraform apply -auto-approve
+                        terraform init
+                        terraform apply -auto-approve
                         """
                     }
                 }
@@ -59,37 +47,26 @@ pipeline {
         stage('Build & Deploy Frontend to S3') {
             steps {
                 script {
-                    // Detect if frontend changed
-                    def frontendChanged = sh(
-                        script: "git diff --name-only HEAD~1 HEAD | grep '^frontend/' || true",
-                        returnStatus: true
-                    ) == 0
+                    // Get ALB DNS dynamically from Terraform output
+                    env.ALB_DNS = sh(script: "cd terraform && terraform output -raw alb_dns_name | tr -d '\"'", returnStdout: true).trim()
 
-                    if (frontendChanged) {
-                        echo "Frontend changes detected, building and deploying..."
+                    echo "ALB DNS: ${env.ALB_DNS}"
 
-                        // Get ALB DNS dynamically from Terraform
-                        env.ALB_DNS = sh(script: "cd terraform && terraform output -raw alb_dns_name | tr -d '\"'", returnStdout: true).trim()
-                        echo "ALB DNS: ${env.ALB_DNS}"
+                    sh """
+                    cd frontend
+                    # Replace the REACT_APP_API_URL in .env with the ALB DNS
+                    sed -i 's|REACT_APP_API_URL=.*|REACT_APP_API_URL=http://${env.ALB_DNS}|' .env
 
-                        sh """
-                            cd frontend
-                            # Update API URL in .env
-                            sed -i 's|REACT_APP_API_URL=.*|REACT_APP_API_URL=http://${env.ALB_DNS}|' .env
+                    rm -rf node_modules package-lock.json
+                    npm install
 
-                            rm -rf node_modules package-lock.json
-                            npm install
+                    chmod +x node_modules/.bin/*
 
-                            chmod +x node_modules/.bin/*
+                    export CI=false
+                    npm run build
 
-                            export CI=false
-                            npm run build
-
-                            aws s3 sync build/ s3://devops-project-frontend-rajesh --region ${AWS_REGION}
-                        """
-                    } else {
-                        echo "No frontend changes detected, skipping build/deploy."
-                    }
+                    aws s3 sync build/ s3://devops-project-frontend-rajesh --region ${AWS_REGION}
+                    """
                 }
             }
         }
@@ -103,4 +80,4 @@ pipeline {
             echo 'Deployment failed.' 
         }
     }
-}
+} 
