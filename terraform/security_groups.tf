@@ -31,13 +31,12 @@ resource "aws_security_group" "alb_sg" {
         Name = "${var.project_name}-alb-sg"
     }
 }
+# ecs security group creation
+resource "aws_security_group" "ecs_sg" {
+    name="${var.project_name}-ecs-sg"
+    description = "sg for ecs fargate task"
+    vpc_id=aws_vpc.main.id
 
-# EKS Security Group for fargate and node group pods
-resource "aws_security_group" "eks_fargate_sg" {
-    name        = "${var.project_name}-eks-fargate-node-sg"
-    description = "allow traffic from alb and eks services backends"
-    vpc_id      = aws_vpc.main.id
-    
     dynamic "ingress" {
         for_each = var.backend_ports
         content {
@@ -48,32 +47,7 @@ resource "aws_security_group" "eks_fargate_sg" {
             security_groups = [aws_security_group.alb_sg.id]
         }
     }
-    
-    egress {
-        from_port   = 0
-        to_port     = 0
-        protocol    = "-1"
-        cidr_blocks = ["0.0.0.0/0"]
-    }
-    
-    tags = {
-        Name = "${var.project_name}-eks-sg"
-    }
-}
-#eks  cluster main security group
-resource "aws_security_group" "eks_cluster_sg" {
-    name="${project_name}-eks-cluster-sg"
-    description = "allow kubectl and api aceess "
-    vpc_id=aws_vpc.main.id
 
-    ingress {
-        description = "allow kubectl to connect and api ,fargate pod all to connect"
-        from_port = 443
-        to_port = 443
-        protocol = "tcp"
-        cidr_blocks = ["0.0.0.0/0"]
-
-    }
     egress {
         from_port = 0
         to_port = 0
@@ -81,27 +55,14 @@ resource "aws_security_group" "eks_cluster_sg" {
         cidr_blocks = ["0.0.0.0/0"]
     }
     tags={
-        Name= "${project_name}-eks-cluster-sg"
-    }
-
-
-  
+        Name= "${var.project_name}-ecs-sg"
+    } 
 }
 # RDS Postgres Security Group - UPDATED for Public Access
-resource "aws_security_group" "RDS-sg" {
+resource "aws_security_group" "RDS_sg" {
     name        = "${var.project_name}-RDS-sg"
     description = "allow eks and public internet access to RDS"
     vpc_id      = aws_vpc.main.id
-    
-    ingress {
-        description = "allow eks to access rds postgres"
-        from_port   = 5432
-        to_port     = 5432
-        protocol    = "tcp"
-        security_groups = [aws_security_group.eks-sg.id,aws_security_group.eks_fargate_sg.id]
-        
-    }
-    
     egress {
         from_port   = 0
         to_port     = 0
@@ -112,4 +73,16 @@ resource "aws_security_group" "RDS-sg" {
     tags = {
         Name = "${var.project_name}-RDS-sg"
     }
+}
+# ----------------------------
+# Allow access from EKS Cluster SG
+# ----------------------------
+resource "aws_security_group_rule" "rds_from_cluster" {
+  type                     = "ingress"
+  from_port                = 5432
+  to_port                  = 5432
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.ecs_sg.id
+  security_group_id        = aws_security_group.RDS_sg.id
+  description              = "Allow EKS cluster control plane access"
 }

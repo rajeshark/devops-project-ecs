@@ -7,71 +7,9 @@ pipeline {
         AWS_CREDENTIALS = credentials('aws-creds-id')
         ECR_ACCOUNT     = '775826428475'
         ECR_REGION      = "${env.AWS_REGION}"
-        KUBE_NAMESPACE  = 'backend'
-        EC2_NODEGROUP   = 'devops-project-alb-nodes'
     }
 
-    stages{
-
-        stage('Terraform Init & Apply') {
-            steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding',
-                    credentialsId: 'aws-creds-id']]) {
-                    dir('terraform') {
-                        sh """
-                        terraform init
-                        terraform apply -auto-approve
-                        """
-                    }
-                }
-            }
-        }
-
-        stage('Configure Kubeconfig') {
-            steps {
-                dir('terraform') {
-                    sh '''
-                    export TF_IN_AUTOMATION=1
-                    CLUSTER_NAME=$(terraform output -raw eks_cluster_name)
-                    aws eks --region ${AWS_REGION} update-kubeconfig --name $CLUSTER_NAME
-                    kubectl get nodes
-                    '''
-                }
-            }
-        }
-
-        stage('Create ALB ServiceAccount') {
-            steps {
-                sh "kubectl apply -f ${env.WORKSPACE}/k8s/alb-controller-sa.yaml"
-            }
-        }
-
-        stage('Install ALB Controller on EC2 Node') {
-            steps {
-                dir('terraform') {
-                    script {
-                        def alb_sg_id = sh(script: "terraform output -raw alb_sg_id", returnStdout: true).trim()
-                        def vpc_id = sh(script: "terraform output -raw vpc_id", returnStdout: true).trim()
-                        def cluster_name = sh(script: "terraform output -raw eks_cluster_name", returnStdout: true).trim()
-
-                        sh """
-                        kubectl create namespace kube-system || true
-                        helm repo add eks https://aws.github.io/eks-charts
-                        helm repo update
-                        helm upgrade --install aws-load-balancer-controller eks/aws-load-balancer-controller \\
-                          -n kube-system \\
-                          --set clusterName=${cluster_name} \\
-                          --set serviceAccount.create=false \\
-                          --set serviceAccount.name=aws-load-balancer-controller \\
-                          --set region=${AWS_REGION} \\
-                          --set vpcId=${vpc_id}
-                        kubectl -n kube-system wait --for=condition=ready pod -l app.kubernetes.io/name=aws-load-balancer-controller --timeout=10m
-                        sed -i 's|<ALB_SG_ID>|${alb_sg_id}|' ${env.WORKSPACE}/k8s/ingress/backen-ingress.yaml
-                        """
-                    }
-                }
-            }
-        }
+    stages {
 
         stage('Build & Push Docker Images') {
             steps {
@@ -93,91 +31,49 @@ pipeline {
             }
         }
 
-        stage('Deploy Kubernetes Resources') {
+        stage('Terraform Init & Apply') {
             steps {
-                script {
-                    sh """
-                    sed -i 's|<ECR_ACCOUNT>|${ECR_ACCOUNT}|' ${env.WORKSPACE}/k8s/deployments/*.yaml
-                    sed -i 's|<AWS_REGION>|${ECR_REGION}|' ${env.WORKSPACE}/k8s/deployments/*.yaml
-
-                    kubectl apply -f ${env.WORKSPACE}/k8s/namespace/
-                    kubectl apply -f ${env.WORKSPACE}/k8s/config/
-                    kubectl apply -f ${env.WORKSPACE}/k8s/secrets/
-                    kubectl apply -f ${env.WORKSPACE}/k8s/deployments/
-                    kubectl apply -f ${env.WORKSPACE}/k8s/services/
-                    kubectl apply -f ${env.WORKSPACE}/k8s/hpa/
-                    kubectl apply -f ${env.WORKSPACE}/k8s/ingress/
-                    """
-                }
-            }
-        }
-
-        stage('Wait for ALB DNS') {
-            steps {
-                script {
-                    def alb_dns = ''
-                    for(int i=0; i<20; i++) {
-                        alb_dns = sh(script: "kubectl get ingress backend-ingress -n ${KUBE_NAMESPACE} -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' || echo ''", returnStdout: true).trim()
-                        if (alb_dns != '') {
-                            echo "ALB DNS ready: ${alb_dns}"
-                            break
-                        }
-                        sleep 30
-                    }
-                    if (alb_dns == '') {
-                        error "ALB DNS not ready after retries!"
-                    }
-                    env.ALB_DNS = alb_dns
-                }
-            }
-        }
-
-        stage('Update ConfigMap & Restart Deployments') {
-            steps {
-                dir('terraform') {
-                    script {
-                        def db_host = sh(script: "terraform output -raw db_endpoint", returnStdout: true).trim()
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-creds-id']]) {
+                    dir('terraform') {
                         sh """
-                        sed -i 's|REPLACE_DB_ENDPOINT|${db_host}|' ${env.WORKSPACE}/k8s/config/backend-configmap.yaml
-                        sed -i 's|REPLACE_ORDERS_ALB_DNS|http://${env.ALB_DNS}|' ${env.WORKSPACE}/k8s/config/backend-configmap.yaml
-                        kubectl apply -f ${env.WORKSPACE}/k8s/config/backend-configmap.yaml -n ${KUBE_NAMESPACE}
+                        terraform init
+                        terraform apply -auto-approve
                         """
-                        def services = ['auth','product','cart','order','payment','email']
-                        for (service in services) {
-                            sh "kubectl rollout restart deployment ${service}-deployment -n ${KUBE_NAMESPACE}"
-                        }
                     }
                 }
             }
         }
 
         stage('Build & Deploy Frontend to S3') {
-            steps {
-                script {
-                    echo "ALB DNS: ${env.ALB_DNS}"
-                    sh """
-                    cd frontend
-                    sed -i 's|REACT_APP_API_URL=.*|REACT_APP_API_URL=http://${env.ALB_DNS}|' .env
+    steps {
+        script {
+            // Get ALB DNS dynamically from Terraform output
+            env.ALB_DNS = sh(script: "terraform output -raw alb_dns_name", returnStdout: true).trim()
+            echo "ALB DNS: ${env.ALB_DNS}"
 
-                    rm -rf node_modules package-lock.json
-                    npm install
+            sh """
+            cd frontend
+            # Replace the REACT_APP_API_URL in .env with the ALB DNS
+            sed -i 's|REACT_APP_API_URL=.*|REACT_APP_API_URL=http://${env.ALB_DNS}|' .env
 
-                    chmod +x node_modules/.bin/*
+            rm -rf node_modules package-lock.json
+            npm install
 
-                    # Disable ESLint warnings-as-errors in CI
-                    export CI=false
-                    npm run build
+            chmod +x node_modules/.bin/*
 
-                    aws s3 sync build/ s3://devops-project-frontend-rajesh --region ${AWS_REGION}
-                    """
-                }
-            }
+            export CI=false
+            npm run build
+
+            aws s3 sync build/ s3://devops-project-frontend-rajesh --region ${AWS_REGION}
+            """
         }
     }
+}
+
 
     post {
         success { 
-            echo 'Deployment to EKS + ALB + frontend S3 complete!' 
+            echo 'Deployment to ECS + ALB + frontend S3 complete!' 
         }
         failure { 
             echo 'Deployment failed.' 

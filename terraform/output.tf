@@ -10,10 +10,6 @@ output "private_subnets" {
   value = [aws_subnet.private_1.id, aws_subnet.private_2.id]
 }
 
-output "eks_sg_id" {
-  value = aws_security_group.eks-sg.id
-}
-
 output "rds_sg_id" {
   value = aws_security_group.RDS-sg.id
 }
@@ -26,13 +22,10 @@ output "frontend_url" {
   value = aws_s3_bucket_website_configuration.static.website_endpoint
 }
 
-output "eks_cluster_name" {
-  value = aws_eks_cluster.eks_cluster.name
-}
-
-output "eks_cluster_endpoint" {
-  value = aws_eks_cluster.eks_cluster.endpoint
-}
 output "alb_sg_id" {
   value = aws_security_group.alb_sg.id
+}
+output "alb_dns_name" {
+  description = "Application Load Balancer DNS URL"
+  value       = aws_lb.app_alb.dns_name
 }
