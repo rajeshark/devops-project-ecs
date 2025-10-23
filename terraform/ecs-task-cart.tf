@@ -28,6 +28,15 @@ resource "aws_ecs_task_definition" "cart" {
         { name = "DB_HOST", valueFrom = "${aws_ssm_parameter.db_host.arn}" },
         { name = "NODE_ENV", valueFrom = "arn:aws:secretsmanager:ap-south-1:775826428475:secret:/quickcart/backend/common-rL3fc5" }
       ]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = "/ecs/${var.project_name}-cart"
+          "awslogs-region"        = "ap-south-1"
+          "awslogs-stream-prefix" = "ecs"
+          "awslogs-create-group"  = "true"
+        }
+      }
     }
   ])
 }
