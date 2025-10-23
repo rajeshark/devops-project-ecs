@@ -11,7 +11,7 @@ resource "aws_ecs_task_definition" "auth" {
   container_definitions = jsonencode([
   {
     name       = "auth-service"
-    image      = "775826428475.dkr.ecr.ap-south-1.amazonaws.com/auth:latest"
+    image      = "775826428475.dkr.ecr.ap-south-1.amazonaws.com/auth:${var.auth_image_tag}"
     essential  = true
     portMappings = [
       {
