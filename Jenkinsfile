@@ -48,7 +48,7 @@ pipeline {
             steps {
                 script {
                     // Get ALB DNS dynamically from Terraform output
-                    env.ALB_DNS = sh(script: "terraform output -raw alb_dns_name | tr -d '\"'", returnStdout: true).trim()
+                    env.ALB_DNS = sh(script: "cd terraform && terraform output -raw alb_dns_name | tr -d '\"'", returnStdout: true).trim()
 
                     echo "ALB DNS: ${env.ALB_DNS}"
 
