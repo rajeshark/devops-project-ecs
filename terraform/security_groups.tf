@@ -84,5 +84,5 @@ resource "aws_security_group_rule" "rds_from_cluster" {
   protocol                 = "tcp"
   source_security_group_id = aws_security_group.ecs_sg.id
   security_group_id        = aws_security_group.RDS_sg.id
-  description              = "Allow EKS cluster control plane access"
+  description              = "Allow ecs cluster to  access rds" 
 }
