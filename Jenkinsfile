@@ -14,8 +14,9 @@ pipeline {
         stage('Build & Push Docker Images') {
             steps {
                 script {
+                    // List of microservices
                     def services = ['auth','product','cart','order','payment','email']
-                    
+
                     for (service in services) {
                         // Check if files in this service folder changed
                         def changed = sh(
@@ -25,16 +26,24 @@ pipeline {
 
                         if (changed) {
                             echo "Changes detected in ${service}, building Docker image..."
+
+                            // Use commit hash as image tag
+                            def IMAGE_TAG = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                            echo "Image tag for ${service}: ${IMAGE_TAG}"
+
                             sh """
                                 aws ecr describe-repositories --repository-names ${service} --region ${ECR_REGION} || \
                                 aws ecr create-repository --repository-name ${service} --region ${ECR_REGION}
 
                                 cd ${service}
-                                docker build -t ${ECR_ACCOUNT}.dkr.ecr.${ECR_REGION}.amazonaws.com/${service}:latest .
+                                docker build -t ${ECR_ACCOUNT}.dkr.ecr.${ECR_REGION}.amazonaws.com/${service}:${IMAGE_TAG} .
                                 aws ecr get-login-password --region ${ECR_REGION} | docker login --username AWS --password-stdin ${ECR_ACCOUNT}.dkr.ecr.${ECR_REGION}.amazonaws.com
-                                docker push ${ECR_ACCOUNT}.dkr.ecr.${ECR_REGION}.amazonaws.com/${service}:latest
+                                docker push ${ECR_ACCOUNT}.dkr.ecr.${ECR_REGION}.amazonaws.com/${service}:${IMAGE_TAG}
                                 cd ..
                             """
+
+                            // Save image tag as environment variable for Terraform
+                            env["${service.toUpperCase()}_IMAGE_TAG"] = IMAGE_TAG
                         } else {
                             echo "No changes in ${service}, skipping Docker build/push."
                         }
@@ -47,9 +56,16 @@ pipeline {
             steps {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-creds-id']]) {
                     dir('terraform') {
+                        // Pass dynamic image tags to Terraform
                         sh """
                             terraform init
-                            terraform apply -auto-approve
+                            terraform apply -auto-approve \
+                                -var "auth_image_tag=${env.AUTH_IMAGE_TAG}" \
+                                -var "product_image_tag=${env.PRODUCT_IMAGE_TAG}" \
+                                -var "cart_image_tag=${env.CART_IMAGE_TAG}" \
+                                -var "order_image_tag=${env.ORDER_IMAGE_TAG}" \
+                                -var "payment_image_tag=${env.PAYMENT_IMAGE_TAG}" \
+                                -var "email_image_tag=${env.EMAIL_IMAGE_TAG}"
                         """
                     }
                 }
