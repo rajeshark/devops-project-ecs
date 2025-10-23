@@ -21,6 +21,7 @@ resource "aws_ecs_service" "auth_service" {
     }
     deployment_minimum_healthy_percent = 50
   deployment_maximum_percent         = 200
+force_new_deployment = true
 }
 # service for payment container
 resource "aws_ecs_service" "product_service" {
@@ -42,6 +43,7 @@ resource "aws_ecs_service" "product_service" {
     }
     deployment_minimum_healthy_percent = 50
   deployment_maximum_percent         = 200
+force_new_deployment = true
 }
 #service for cart-container
 resource "aws_ecs_service" "cart_service" {
@@ -63,6 +65,7 @@ resource "aws_ecs_service" "cart_service" {
     }
     deployment_minimum_healthy_percent = 50
   deployment_maximum_percent         = 200
+force_new_deployment = true
 }
 #service for order container 
 resource "aws_ecs_service" "order_service" {
@@ -84,6 +87,7 @@ resource "aws_ecs_service" "order_service" {
     }
     deployment_minimum_healthy_percent = 50
   deployment_maximum_percent         = 200
+force_new_deployment = true
 }
 #service for payment container
 resource "aws_ecs_service" "payment_service" {
@@ -105,6 +109,7 @@ resource "aws_ecs_service" "payment_service" {
     }
     deployment_minimum_healthy_percent = 50
   deployment_maximum_percent         = 200
+force_new_deployment = true
 }
 #service for email container
 resource "aws_ecs_service" "email_service" {
@@ -126,6 +131,7 @@ resource "aws_ecs_service" "email_service" {
     }
     deployment_minimum_healthy_percent = 50
   deployment_maximum_percent         = 200
+force_new_deployment = true
 }
 
   
