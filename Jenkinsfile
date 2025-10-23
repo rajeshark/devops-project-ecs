@@ -17,7 +17,7 @@ pipeline {
                     def services = ['auth','product','cart','order','payment','email']
 
                     for (service in services) {
-                        // Check if any files in this service folder changed
+                        // Detect if files in this service folder changed
                         def changed = sh(
                             script: "git diff --name-only HEAD~1 HEAD | grep '^${service}/' || true",
                             returnStatus: true
@@ -59,7 +59,7 @@ pipeline {
         stage('Build & Deploy Frontend to S3') {
             steps {
                 script {
-                    // Check if frontend code changed
+                    // Detect if frontend changed
                     def frontendChanged = sh(
                         script: "git diff --name-only HEAD~1 HEAD | grep '^frontend/' || true",
                         returnStatus: true
@@ -68,13 +68,13 @@ pipeline {
                     if (frontendChanged) {
                         echo "Frontend changes detected, building and deploying..."
 
-                        // Get ALB DNS dynamically from Terraform output
+                        // Get ALB DNS dynamically from Terraform
                         env.ALB_DNS = sh(script: "cd terraform && terraform output -raw alb_dns_name | tr -d '\"'", returnStdout: true).trim()
                         echo "ALB DNS: ${env.ALB_DNS}"
 
                         sh """
                             cd frontend
-                            # Replace the REACT_APP_API_URL in .env with the ALB DNS
+                            # Update API URL in .env
                             sed -i 's|REACT_APP_API_URL=.*|REACT_APP_API_URL=http://${env.ALB_DNS}|' .env
 
                             rm -rf node_modules package-lock.json
