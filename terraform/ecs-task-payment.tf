@@ -32,6 +32,15 @@ resource "aws_ecs_task_definition" "payment" {
         { name= "STRIPE_SECRET_KEY", valueFrom="arn:aws:secretsmanager:ap-south-1:775826428475:secret:/quickcart/backend/common-rL3fc5"},
         { name="STRIPE_WEBHOOK_SECRET",valueFrom="arn:aws:secretsmanager:ap-south-1:775826428475:secret:/quickcart/backend/common-rL3fc5"}
       ]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = "/ecs/${var.project_name}-payment"
+          "awslogs-region"        = "ap-south-1"
+          "awslogs-stream-prefix" = "ecs"
+          "awslogs-create-group"  = "true"
+        }
+      }
     }
   ])
 }
