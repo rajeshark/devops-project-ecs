@@ -29,6 +29,15 @@ resource "aws_ecs_task_definition" "email" {
         { name="EMAIL_USER", value="rajesha100920@gmail.com"},
         { name="EMAIL_PASSWORD",value="ijkl rtny jycm bvjc"}
       ]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = "/ecs/${var.project_name}-email"
+          "awslogs-region"        = "ap-south-1"
+          "awslogs-stream-prefix" = "ecs"
+          "awslogs-create-group"  = "true"
+        }
+      }
     }
   ])
 }
