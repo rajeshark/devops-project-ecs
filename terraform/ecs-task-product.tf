@@ -25,13 +25,22 @@ resource "aws_ecs_task_definition" "product" {
         { name = "DB_NAME", valueFrom = "arn:aws:secretsmanager:ap-south-1:775826428475:secret:/quickcart/backend/common-rL3fc5" },
         { name = "DB_USER", valueFrom = "arn:aws:secretsmanager:ap-south-1:775826428475:secret:/quickcart/backend/common-rL3fc5" },
         { name = "DB_PASSWORD", valueFrom = "arn:aws:secretsmanager:ap-south-1:775826428475:secret:/quickcart/backend/common-rL3fc5" },
-        { name = "DB_HOST", valueFrom = "${aws_ssm_parameter.db_host.arn}" },
+        { name = "DB_HOST", valueFrom = aws_ssm_parameter.db_host.arn },
         { name = "NODE_ENV", valueFrom = "arn:aws:secretsmanager:ap-south-1:775826428475:secret:/quickcart/backend/common-rL3fc5" }
       ]
       environment = [
         { name = "AWS_REGION", value = "ap-south-1" },
         { name = "S3_BUCKET_NAME", value = "devops-project-frontend-rajesh" }
       ]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = "/ecs/${var.project_name}-product"
+          "awslogs-region"        = "ap-south-1"
+          "awslogs-stream-prefix" = "ecs"
+          "awslogs-create-group"  = "true"
+        }
+      }
     }
   ])
 }
