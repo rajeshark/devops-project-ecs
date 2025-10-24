@@ -225,7 +225,52 @@ sudo yum install -y docker
 sudo service docker start
 docker -v
 
-4 # install kubctl c
+4 # install kubctl install  a kuburnate cli can intereact with any cluster (eks,gke,aks,self maneged)
+kubectl version --client
+curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.34.1/2025-09-19/bin/linux/amd64/kubectl
+chmod +x ./kubectl
+mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$HOME/bin:$PATH
+echo 'export PATH=$HOME/bin:$PATH' >> ~/.bashrc
+kubectl version --client
+
+5 # helm install(a kuburnate packcage maneger thta we required for installin aws load balancer controller on kube-system  ) 
+curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+helm version
+
+6 # jeenkins install on amazon linux 2023
+# Update
+sudo dnf update -y
+
+# Install Java 17
+sudo dnf install java-17-amazon-corretto -y
+
+# Add Jenkins repo
+sudo tee /etc/yum.repos.d/jenkins.repo <<EOF
+[jenkins]
+name=Jenkins
+baseurl=https://pkg.jenkins.io/redhat-stable/
+gpgcheck=1
+gpgkey=https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+EOF
+
+# Import key and install Jenkins
+sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+sudo dnf install jenkins -y
+
+# Enable & start Jenkins
+sudo systemctl enable jenkins
+sudo systemctl start jenkins
+sudo systemctl status jenkins
+
+get password using sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+open 8080 port instance security group
+now use (public ip of instance :8080) in browers you will see dashbaord of jenkins after that enter the password you geeted form this commads  sudo cat /var/lib/jenkins/secrets/initialAdminPassword) 
+
+7 # pugins to be installed on jenkins are include 
+
+
+
+
 
 
   
