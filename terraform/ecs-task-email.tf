@@ -11,7 +11,7 @@ resource "aws_ecs_task_definition" "email" {
   container_definitions = jsonencode([
     {
       name       = "email-service"
-      image      = "775826428475.dkr.ecr.ap-south-1.amazonaws.com/email:latest"
+      image      = "775826428475.dkr.ecr.ap-south-1.amazonaws.com/email:${var.email_image_tag}"
       essential  = true
       portMappings = [
         {
