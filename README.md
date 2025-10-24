@@ -21,37 +21,8 @@
 
 ## 2. Architecture Diagram
 
-                              ┌───────────────┐
-                              │   Route 53    │
-                              └───────┬───────┘
-                                      │
-                              ┌───────▼───────┐
-                              │ CloudFront CDN│
-                              └───────┬───────┘
-                                      │
-                              ┌───────▼───────┐
-                              │    S3 Bucket  │
-                              │ (Frontend App)│
-                              └───────┬───────┘
-                                      │
-                     ┌────────────────▼────────────────┐
-                     │ Application Load Balancer (ALB) │
-                     │ Path-based routing to services  │
-                     └─────────────┬───────────────────┘
-                                   │
-          ┌─────────────────────┴─────────────────────┐
-          │                                           │
-┌─────────▼─────────┐                       ┌─────────▼─────────┐
-│ ECS Cluster (Fargate)│                     │ ECS Cluster (Fargate) │
-│ Auth, Cart, Email     │                     │ Product, Order, Payment │
-└─────────┬─────────┘                       └─────────┬─────────┘
-          │                                           │
-          └─────────────────────┬─────────────────────┘
-                                   │
-                             ┌─────▼─────┐
-                             │ PostgreSQL │
-                             │    RDS     │
-                             └────────────┘
+![QuickCart Architecture](assets/architecture.png)
+
 
 ---
 
