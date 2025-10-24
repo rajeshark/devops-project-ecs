@@ -11,7 +11,7 @@ resource "aws_ecs_task_definition" "product" {
   container_definitions = jsonencode([
     {
       name       = "product-service"
-      image      = "775826428475.dkr.ecr.ap-south-1.amazonaws.com/product:latest"
+      image      = "775826428475.dkr.ecr.ap-south-1.amazonaws.com/product:${var.product_image_tag}"
       essential  = true
       portMappings = [
         {
