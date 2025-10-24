@@ -11,7 +11,7 @@ resource "aws_ecs_task_definition" "cart" {
   container_definitions = jsonencode([
     {
       name       = "cart-service"
-      image      = "775826428475.dkr.ecr.ap-south-1.amazonaws.com/cart:latest"
+      image      = "775826428475.dkr.ecr.ap-south-1.amazonaws.com/cart:${var.cart_image_tag}"
       essential  = true
       portMappings = [
         {
