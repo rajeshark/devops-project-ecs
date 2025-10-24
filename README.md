@@ -265,3 +265,5 @@ ID: aws-creds-id
 
 Add Access Key ID and Secret Key
 
+### 11 create a stripe secrete key and public key using stripe board and alsi there only create webhook 
+
