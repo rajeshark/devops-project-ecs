@@ -11,7 +11,7 @@ resource "aws_ecs_task_definition" "order" {
   container_definitions = jsonencode([
     {
       name       = "order-service"
-      image      = "775826428475.dkr.ecr.ap-south-1.amazonaws.com/order:latest"
+      image      = "775826428475.dkr.ecr.ap-south-1.amazonaws.com/order:${var.order_image_tag}"
       essential  = true
       portMappings = [
         {
