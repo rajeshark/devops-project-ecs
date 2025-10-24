@@ -21,7 +21,7 @@
 
 ## 2. Architecture Diagram
 
-![QuickCart Architecture](architecture.png)
+![QuickCart Architecture](architecture.png.png)
 
 
 ---
