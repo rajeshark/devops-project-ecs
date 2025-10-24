@@ -11,7 +11,7 @@
   `auth`, `product`, `cart`, `order`, `payment`, `email`
 - **Database**: PostgreSQL on AWS RDS
 - **Frontend**: React.js (Customer site + Admin dashboard)
-- **Containerized Backend**: Each service runs in Docker and deployed to **ECS Fargate**
+- **Containerized Backend**: Each service build in Docker as image push ecr  and deployed to **ECS Fargate** 
 - **Routing**: Path-based API routing using **Application Load Balancer (ALB)**
 - **CI/CD**: Jenkins + Terraform automate build and deployment
 - **Images stored in**: AWS ECR
@@ -179,28 +179,28 @@ sudo yum install -y docker
 sudo service docker start
 docker -v
 
-4️⃣ kubectl (Kubernetes CLI)
+### 4️⃣ kubectl (Kubernetes CLI)
 curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.34.1/2025-09-19/bin/linux/amd64/kubectl
 chmod +x ./kubectl
 mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$HOME/bin:$PATH
 echo 'export PATH=$HOME/bin:$PATH' >> ~/.bashrc
 kubectl version --client
 
-5️⃣ Helm (Kubernetes Package Manager)
+### 5️⃣ Helm (Kubernetes Package Manager)
 curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 helm version
 
-6️⃣ Node.js
+### 6️⃣ Node.js
 sudo yum install -y gcc-c++ make 
 curl -sL https://rpm.nodesource.com/setup_21.x | sudo -E bash -
 sudo yum install -y nodejs
 node -v
 
-7️⃣ Git
+### 7️⃣ Git
 sudo dnf update
 sudo dnf install git -y
 git --version
-8️⃣ Jenkins
+### 8️⃣ Jenkins
 sudo dnf update -y
 sudo dnf install java-17-amazon-corretto -y
 
@@ -228,7 +228,7 @@ sudo cat /var/lib/jenkins/secrets/initialAdminPassword
 Open http://<public-ip>:8080 in browser and log in using that password.
 Make sure port 8080 is open in your EC2 security group.
 
-9️⃣ Jenkins Plugins to Install
+### 9️⃣ Jenkins Plugins to Install
 
 AWS Credentials
 
@@ -254,7 +254,7 @@ Kubernetes CLI
 
 GitHub Integration
 
-🔟 Add AWS Credentials to Jenkins
+### 🔟 Add AWS Credentials to Jenkins
 
 Go to:
 Dashboard → Manage Jenkins → Credentials → Global → Add Credentials
