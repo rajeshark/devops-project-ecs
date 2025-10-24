@@ -11,7 +11,7 @@ resource "aws_ecs_task_definition" "payment" {
   container_definitions = jsonencode([
     {
       name       = "payment-service"
-      image      = "775826428475.dkr.ecr.ap-south-1.amazonaws.com/payment:latest"
+      image      = "775826428475.dkr.ecr.ap-south-1.amazonaws.com/payment:${var.payment_image_tag}"
       essential  = true
       portMappings = [
         {
