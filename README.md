@@ -295,7 +295,7 @@ now use (public ip of instance :8080) in browers you will see dashbaord of jenki
 
 
 10 add aws credentials to the credentials in jenkins 
-with name = aws-creds-id
+with id name =aws-creds-id and add access key and secrete key to it
 
 
 
