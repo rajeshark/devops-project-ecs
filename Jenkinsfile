@@ -43,7 +43,9 @@ pipeline {
                             """
 
                             // Save image tag as environment variable for Terraform
-                            env["${service.toUpperCase()}_IMAGE_TAG"] = IMAGE_TAG
+                            
+                            env.setProperty("${service.toUpperCase()}_IMAGE_TAG", IMAGE_TAG)
+
                         } else {
                             echo "No changes in ${service}, skipping Docker build/push."
                         }
