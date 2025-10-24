@@ -26,7 +26,7 @@ resource "aws_ecs_task_definition" "payment" {
         { name = "DB_USER", valueFrom = "arn:aws:secretsmanager:ap-south-1:775826428475:secret:/quickcart/backend/common-rL3fc5:DB_USER::" },
         { name = "DB_PASSWORD", valueFrom = "arn:aws:secretsmanager:ap-south-1:775826428475:secret:/quickcart/backend/common-rL3fc5:DB_PASSWORD::" },
         { name = "DB_HOST", valueFrom = "${aws_ssm_parameter.db_host.arn}" },
-        { name = "ORDER_SERVICE_URL", valueFrom = "${aws_ssm_parameter.order_service_url.arn}" },
+        { name = "ORDERS_SERVICE_URL", valueFrom = "${aws_ssm_parameter.order_service_url.arn}" },
         { name = "NODE_ENV", valueFrom = "arn:aws:secretsmanager:ap-south-1:775826428475:secret:/quickcart/backend/common-rL3fc5:NODE_ENV::" },
         { name = "STRIPE_PUBLISHABLE_KEY", valueFrom="arn:aws:secretsmanager:ap-south-1:775826428475:secret:/quickcart/backend/common-rL3fc5:STRIPE_PUBLISHABLE_KEY::"},
         { name= "STRIPE_SECRET_KEY", valueFrom="arn:aws:secretsmanager:ap-south-1:775826428475:secret:/quickcart/backend/common-rL3fc5:STRIPE_SECRET_KEY::"},
