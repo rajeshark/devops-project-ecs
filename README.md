@@ -1,27 +1,26 @@
-1. Project Overview
+# 🛒 QuickCart - Full Stack E-commerce Application (DevOps + AWS)
 
-QuickCart is a full-stack e-commerce application deployed on AWS using modern DevOps practices.
+## 1. Project Overview
 
-Key Features:
-The frontend is fully serverless (hosted on S3 + CloudFront), and backend microservices run on AWS Fargate, so no server management is required
+**QuickCart** is a full-stack e-commerce application deployed on **AWS** using modern **DevOps** practices.
 
-Microservices architecture with 6 backend services: auth, product, cart, order, payment, email
+### 🚀 Key Features
 
-Backend built with Node.js and connected to PostgreSQL RDS
+- **Serverless Frontend**: Hosted on **S3 + CloudFront**
+- **Backend Microservices** (Node.js):  
+  `auth`, `product`, `cart`, `order`, `payment`, `email`
+- **Database**: PostgreSQL on AWS RDS
+- **Frontend**: React.js (Customer site + Admin dashboard)
+- **Containerized Backend**: Each service runs in Docker and deployed to **ECS Fargate**
+- **Routing**: Path-based API routing using **Application Load Balancer (ALB)**
+- **CI/CD**: Jenkins + Terraform automate build and deployment
+- **Images stored in**: AWS ECR
+- **Domain managed by**: AWS Route 53
 
-Frontend built with React.js: includes customer website and admin dashboard
+---
 
-Frontend hosted on S3 with CloudFront CDN for fast delivery
+## 2. Architecture Diagram
 
-Backend services deployed on ECS Fargate with ALB for routing
-
-CI/CD pipeline using Jenkins and Terraform
-
-Docker images stored in AWS ECR
-
-Domain name attached via Route 53
-
-2. Architecture Diagram.
                               ┌───────────────┐
                               │   Route 53    │
                               └───────┬───────┘
@@ -35,10 +34,9 @@ Domain name attached via Route 53
                               │ (Frontend App)│
                               └───────┬───────┘
                                       │
-                                      │
                      ┌────────────────▼────────────────┐
-                     │   Application Load Balancer (ALB) │
-                     │   Path-based routing to services  │
+                     │ Application Load Balancer (ALB) │
+                     │ Path-based routing to services  │
                      └─────────────┬───────────────────┘
                                    │
              ┌─────────────────────┴─────────────────────┐
@@ -52,211 +50,189 @@ Domain name attached via Route 53
                                    │
                              ┌─────▼─────┐
                              │ PostgreSQL │
-                             │    RDS    │
-                             └───────────┘
-
-3. CI/CD Pipeline
-
-Workflow:
-
-Build Stage (Jenkins)
-1.1 Pull backend (Node.js) code from GitHub.
-1.2 Build Docker images for all backend microservices (auth, product, cart, order, payment, email).
-1.3 Pull frontend (React.js) code from GitHub.
-1.4 Build React frontend app.
-
-Push Stage
-2.1 Push backend Docker images to AWS ECR.
-2.2 Deploy frontend build to S3 bucket.
-
-Deploy Stage (Terraform)
-3.1 Deploy ECS Fargate services with updated Docker images.
-3.2 Configure ALB with path-based routing for APIs.
-3.3 Deploy CloudFront + S3 for frontend.
-3.4 Provision Security Groups, IAM roles, and RDS PostgreSQL.
-
-End Result
-4.1 Frontend served via CloudFront + S3.
-4.2 Backend services running on ECS Fargate, accessible via ALB.
-4.3 Automatic deployment ensures any code push updates the application seamlessly.
-
-
-4. Technologies Used
-
-List all major tools, frameworks, and AWS services in a clean table:
-
-Category	                                 Tools / Services
-Backend	                               Node.js, Express.js, Docker
-Frontend	                                      React.js
-Containerization	                           Docker, AWS ECR
-Orchestration	                              AWS ECS Fargate
-Load Balancing	                     AWS ALB (Application Load Balancer)
-Database	                                AWS RDS (PostgreSQL)
-Hosting	                                  AWS S3 + CloudFront
-DNS	                                         AWS Route 53
-CI/CD	                                     Jenkins, Terraform
-Security                               	IAM Roles, Security Groups, VPC,subnets,nat
-
-5. Security & Networking
-
-Explain how your AWS setup ensures security:
-
-VPC: Private subnets for ECS tasks and RDS.
-
-Security Groups: Restrict inbound/outbound traffic.
-
-IAM Roles: ECS tasks use roles to access AWS resources securely.
-
-HTTPS: Enabled via CloudFront and ALB for frontend and API.
-
-Database Security: PostgreSQL RDS only accessible from ECS services
-
-6. How the Application Works (Flow)
-
-Step-by-step end-to-end flow for users:
-
-User accesses frontend website (customer or admin).
-
-Frontend requests go through CloudFront CDN → S3 bucket.
-
-API requests are routed via ALB.
-
-ALB forwards requests to the appropriate ECS Fargate service based on path.
-
-Microservices interact with PostgreSQL RDS to read/write data.
-
-Responses are returned to frontend via ALB → CloudFront → User.
-
-7. Future Enhancements / Learnings
-
-Implement autoscaling for ECS services.
-
-Add monitoring & logging with CloudWatch or ELK stack.
-
-Modularize Terraform scripts for reusability.
-
-Improve CI/CD pipeline with automated tests.
-
-Ah! I see the issue — the numbering in section 8 (Deployment Architecture) isn’t copying properly. This usually happens if you use nested numbers or bullets inconsistently. The fix is to use **simple sequential numbering** without sub-decimal points, which works perfectly in Word, Google Docs, or Markdown. Here’s section 8 rewritten cleanly:
+                             │    RDS     │
+                             └────────────┘
 
 ---
 
-### **8. Deployment Architecture / Infrastructure Details**
+## 3. CI/CD Pipeline
 
-1. **Frontend Deployment**
+### ⚙️ Workflow
 
-   * React app is built and uploaded to **S3** via Jenkins CI/CD.
-   * **CloudFront CDN** serves content globally.
-   * Custom domain configured using **Route 53**.
+#### **Build Stage (Jenkins)**
+1. Pull backend (Node.js) code from GitHub  
+2. Build Docker images for microservices (auth, product, cart, order, payment, email)  
+3. Pull frontend (React.js) code  
+4. Build React frontend app  
 
-2. **Backend Deployment**
+#### **Push Stage**
+5. Push backend Docker images to **AWS ECR**  
+6. Deploy frontend build to **S3 Bucket**
 
-   * Node.js microservices are containerized with **Docker**.
-   * Docker images pushed to **AWS ECR**.
-   * **ECS Fargate** launches tasks using these images.
-   * **ALB** routes API requests to the appropriate service based on URL paths.
+#### **Deploy Stage (Terraform)**
+7. Deploy ECS Fargate services with new Docker images  
+8. Configure **ALB** for path-based routing  
+9. Deploy **CloudFront + S3** for frontend  
+10. Provision **Security Groups**, **IAM roles**, and **RDS PostgreSQL**
 
-3. **Database Deployment**
-
-   * **PostgreSQL RDS** stores all application data.
-   * Hosted in **private subnets** for security.
-   * Only ECS services can access it via **Security Groups**.
-
-4. **CI/CD Integration**
-
-   * Jenkins automates build and deployment of frontend and backend.
-   * Terraform provisions and updates all AWS infrastructure (ECS, ALB, S3, CloudFront, RDS, IAM, Security Groups).
-
-5. **Security & Networking**
-
-   * VPC with private/public subnets.
-   * IAM roles for ECS tasks and Jenkins deployment.
-   * Security Groups control traffic between ECS, ALB, and RDS.
-   * HTTPS enforced via CloudFront and ALB.
-     
-
-Perfect! Here’s a **clean, copy-paste-friendly summary section** with proper numbering:
+#### **End Result**
+- Frontend served via **CloudFront + S3**  
+- Backend microservices running on **ECS Fargate (via ALB)**  
+- Full automation through Jenkins and Terraform  
 
 ---
 
-### **9. Summary / Conclusion**
+## 4. Technologies Used
 
-1. **QuickCart Overview**
+| Category | Tools / Services |
+|-----------|------------------|
+| **Backend** | Node.js, Express.js, Docker |
+| **Frontend** | React.js |
+| **Containerization** | Docker, AWS ECR |
+| **Orchestration** | AWS ECS Fargate |
+| **Load Balancing** | AWS ALB |
+| **Database** | AWS RDS (PostgreSQL) |
+| **Hosting** | AWS S3 + CloudFront |
+| **DNS** | AWS Route 53 |
+| **CI/CD** | Jenkins, Terraform |
+| **Security** | IAM Roles, Security Groups, VPC, Subnets, NAT |
 
-   * QuickCart is a **full-stack, serverless-friendly e-commerce application** deployed on AWS.
-   * Combines **microservices architecture** for backend and a **React.js frontend**.
+---
 
-2. **Key Achievements**
+## 5. Security & Networking
 
-   * Frontend hosted on **S3 + CloudFront** for global, fast delivery.
-   * Backend microservices running on **ECS Fargate**, reducing server management.
-   * Automatic deployments with **Jenkins CI/CD** and **Terraform IaC**.
-   * Secure infrastructure using **VPC, Security Groups, IAM roles**, and private RDS.
+- **VPC**: Private subnets for ECS tasks and RDS  
+- **Security Groups**: Restrict inbound/outbound traffic  
+- **IAM Roles**: ECS tasks use roles to access AWS services  
+- **HTTPS**: Enabled via CloudFront + ALB  
+- **Database Security**: PostgreSQL RDS accessible only from ECS  
 
-3. **Project Learnings**
+---
 
-   * Hands-on experience with **AWS services** like ECS, ALB, S3, CloudFront, RDS, Route 53, and ECR.
-   * Implemented **path-based routing** and serverless frontend deployment.
-   * Gained practical knowledge of **DevOps practices**: CI/CD, Infrastructure as Code, and automated deployments.
+## 6. Application Flow
 
-4. **Future Enhancements**
+1. User accesses frontend (customer/admin)
+2. Frontend requests → **CloudFront CDN → S3 bucket**
+3. API requests → **ALB**
+4. ALB routes request to correct **ECS Fargate service**
+5. Microservices interact with **RDS PostgreSQL**
+6. Response → ALB → CloudFront → User  
 
-   * Implement **autoscaling** for ECS services.
-   * Add **monitoring and logging** with CloudWatch or ELK stack.
-   * Modularize Terraform scripts for **reusability and scalability**.
-   * Add **automated testing** in Jenkins pipelines for CI/CD.
+---
 
-### required command to installl software on jenkins  running ec2 server are 
-* iam using amazon linux 2023 server with t3.small for jenkins. which ever you want you choose but software intsllaing commnds will change according  linux distribution keep it in mind
- 1 # aws cli install note in amazon linux alredy aws cli will be installed so no need to install check aws --version if not  installed using below command
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscli
-unzip awscliv2.zip
+## 7. Future Enhancements
+
+- Enable **autoscaling** for ECS services  
+- Add **monitoring/logging** with CloudWatch or ELK stack  
+- Modularize Terraform scripts for reusability  
+- Integrate **automated tests** in Jenkins  
+
+---
+
+## 8. Deployment Architecture / Infrastructure Details
+
+### **Frontend Deployment**
+- React app built and uploaded to **S3**
+- **CloudFront CDN** serves globally
+- Custom domain via **Route 53**
+
+### **Backend Deployment**
+- Node.js microservices containerized with **Docker**
+- Pushed to **AWS ECR**
+- **ECS Fargate** launches containers
+- **ALB** handles path-based routing
+
+### **Database Deployment**
+- **PostgreSQL RDS** in private subnet
+- Only accessible from ECS via **Security Groups**
+
+### **CI/CD Integration**
+- Jenkins automates build & deploy
+- Terraform provisions infrastructure (ECS, ALB, RDS, S3, IAM, SGs)
+
+### **Security & Networking**
+- VPC with private/public subnets
+- IAM roles for ECS tasks and Jenkins
+- HTTPS via ALB + CloudFront
+
+---
+
+## 9. Summary / Conclusion
+
+### **QuickCart Overview**
+- Full-stack, serverless-ready e-commerce app on AWS  
+- Microservices backend + React frontend  
+
+### **Key Achievements**
+- Serverless frontend (S3 + CloudFront)
+- ECS Fargate backend (no servers to manage)
+- Jenkins + Terraform automate CI/CD
+- Strong security (IAM, SGs, private RDS)
+
+### **Learnings**
+- Hands-on AWS ECS, ALB, RDS, CloudFront, Route 53, ECR
+- Path-based routing, IaC with Terraform, DevOps automation
+
+### **Future Enhancements**
+- Autoscaling ECS
+- Add ELK/CloudWatch monitoring
+- Modular Terraform
+- CI/CD testing automation
+
+---
+
+## ⚙️ Jenkins EC2 Setup (Amazon Linux 2023)
+
+You can use `t3.small` EC2 instance for Jenkins.  
+Commands below assume **Amazon Linux 2023** (adjust if using Ubuntu/RHEL).
+
+---
+
+### 1️⃣ AWS CLI (already installed)
+```bash
+aws --version
+# If not installed
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscli.zip"
+unzip awscli.zip
 sudo ./aws/install
 
-2 # terraform install 
+### 2️⃣ Terraform
 sudo dnf install -y dnf-plugins-core
 sudo dnf config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
 sudo dnf -y install terraform
 terraform -version
 
-3 # intsall docker
+### 3️⃣ Docker
 sudo yum update -y
 sudo yum install -y docker
 sudo service docker start
 docker -v
 
-4 # install kubctl install  a kuburnate cli can intereact with any cluster (eks,gke,aks,self maneged)
-kubectl version --client
+4️⃣ kubectl (Kubernetes CLI)
 curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.34.1/2025-09-19/bin/linux/amd64/kubectl
 chmod +x ./kubectl
 mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$HOME/bin:$PATH
 echo 'export PATH=$HOME/bin:$PATH' >> ~/.bashrc
 kubectl version --client
 
-5 # helm install(a kuburnate packcage maneger thta we required for installin aws load balancer controller on kube-system  ) 
+5️⃣ Helm (Kubernetes Package Manager)
 curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 helm version
 
-6 # node.js  install 
+6️⃣ Node.js
 sudo yum install -y gcc-c++ make 
 curl -sL https://rpm.nodesource.com/setup_21.x | sudo -E bash -
 sudo yum install -y nodejs
-node -v  
+node -v
 
-7 # git install amazon linux 2023
+7️⃣ Git
 sudo dnf update
 sudo dnf install git -y
 git --version
-
-
-8 # jenkins install on amazon linux 2023
-# Update
+8️⃣ Jenkins
 sudo dnf update -y
-
-# Install Java 17
 sudo dnf install java-17-amazon-corretto -y
 
-# Add Jenkins repo
 sudo tee /etc/yum.repos.d/jenkins.repo <<EOF
 [jenkins]
 name=Jenkins
@@ -265,39 +241,56 @@ gpgcheck=1
 gpgkey=https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
 EOF
 
-# Import key and install Jenkins
 sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
 sudo dnf install jenkins -y
 
-# Enable & start Jenkins
 sudo systemctl enable jenkins
 sudo systemctl start jenkins
 sudo systemctl status jenkins
 
-get password using sudo cat /var/lib/jenkins/secrets/initialAdminPassword
-open 8080 port instance security group
-now use (public ip of instance :8080) in browers you will see dashbaord of jenkins after that enter the password you geeted form this commads  sudo cat /var/lib/jenkins/secrets/initialAdminPassword) 
 
-9 # pugins to be installed on jenkins are include 
+🔹 Get password:
 
-1 AWS Credentials
-2 Amazon ECR
-3 Amazon Elastic Container Service (ECS) / Fargate
-4 Pipeline: AWS Steps
-5 Pipeline: Stage View
-6 Docker Pipeline
-7 Webhook Step
-8 Git server
-9 Kubernetes Credentials
-10 Kubernetes
-11 Kubernetes CLI
-12 GitHub Integration
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword
 
 
-10 add aws credentials to the credentials in jenkins 
-with id name =aws-creds-id and add access key and secrete key to it
+Open http://<public-ip>:8080 in browser and log in using that password.
+Make sure port 8080 is open in your EC2 security group.
 
+9️⃣ Jenkins Plugins to Install
 
+AWS Credentials
 
-  
+Amazon ECR
+
+Amazon ECS / Fargate
+
+Pipeline: AWS Steps
+
+Pipeline: Stage View
+
+Docker Pipeline
+
+Webhook Step
+
+Git Server
+
+Kubernetes Credentials
+
+Kubernetes
+
+Kubernetes CLI
+
+GitHub Integration
+
+🔟 Add AWS Credentials to Jenkins
+
+Go to:
+Dashboard → Manage Jenkins → Credentials → Global → Add Credentials
+
+Kind: AWS Credentials
+
+ID: aws-creds-id
+
+Add Access Key ID and Secret Key
 
