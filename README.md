@@ -237,7 +237,19 @@ kubectl version --client
 curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 helm version
 
-6 # jeenkins install on amazon linux 2023
+6 # node.js  install 
+sudo yum install -y gcc-c++ make 
+curl -sL https://rpm.nodesource.com/setup_21.x | sudo -E bash -
+sudo yum install -y nodejs
+node -v  
+
+7 # git install amazon linux 2023
+sudo dnf update
+sudo dnf install git -y
+git --version
+
+
+8 # jenkins install on amazon linux 2023
 # Update
 sudo dnf update -y
 
@@ -266,10 +278,24 @@ get password using sudo cat /var/lib/jenkins/secrets/initialAdminPassword
 open 8080 port instance security group
 now use (public ip of instance :8080) in browers you will see dashbaord of jenkins after that enter the password you geeted form this commads  sudo cat /var/lib/jenkins/secrets/initialAdminPassword) 
 
-7 # pugins to be installed on jenkins are include 
+9 # pugins to be installed on jenkins are include 
+
+1 AWS Credentials
+2 Amazon ECR
+3 Amazon Elastic Container Service (ECS) / Fargate
+4 Pipeline: AWS Steps
+5 Pipeline: Stage View
+6 Docker Pipeline
+7 Webhook Step
+8 Git server
+9 Kubernetes Credentials
+10 Kubernetes
+11 Kubernetes CLI
+12 GitHub Integration
 
 
-
+10 add aws credentials to the credentials in jenkins 
+with name 
 
 
 
