@@ -205,13 +205,8 @@ git --version
 sudo dnf update -y
 sudo dnf install java-17-amazon-corretto -y
 
-sudo tee /etc/yum.repos.d/jenkins.repo <<EOF
-[jenkins]
-name=Jenkins
-baseurl=https://pkg.jenkins.io/redhat-stable/
-gpgcheck=1
-gpgkey=https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
-EOF
+sudo wget -O /etc/yum.repos.d/jenkins.repo \
+    https://pkg.jenkins.io/redhat-stable/jenkins.repo
 
 sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
 sudo dnf install jenkins -y
